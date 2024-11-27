@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>999217753065-pt3992hk78jernebm5hk458n93ogroru.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.999217753065-pt3992hk78jernebm5hk458n93ogroru</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>999217753065-21kf7bqgefknv4ni45k2cfojn6u4j040.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDS6AymtKBhvnSLc8DKr2Jz-7oJJscXHC0</string>
+	<key>GCM_SENDER_ID</key>
+	<string>999217753065</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.stitchesAfrica.app</string>
+	<key>PROJECT_ID</key>
+	<string>stithces-africa</string>
+	<key>STORAGE_BUCKET</key>
+	<string>stithces-africa.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:999217753065:ios:2bd2e7fb93f5dcc4c93978</string>
+</dict>
+</plist>

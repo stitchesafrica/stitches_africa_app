@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "999217753065",
+    "project_id": "stithces-africa",
+    "storage_bucket": "stithces-africa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:999217753065:android:eef5492de4b3c1cdc93978",
+        "android_client_info": {
+          "package_name": "com.stitchesAfrica.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeyK1beYcMTe0OljDglcMyaO61v34y6A8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
