@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,6 +23,11 @@ class MeasurmentsList extends ConsumerStatefulWidget {
 
 class _MeasurmentsListState extends ConsumerState<MeasurmentsList> {
   final Map<String, TextEditingController> _controllers = {};
+
+  double cmToInches(double cm) {
+    const double cmToInchFactor = 0.393701; // 1 cm = 0.393701 inches
+    return (cm * cmToInchFactor);
+  }
 
   @override
   void dispose() {
@@ -96,9 +103,13 @@ class _MeasurmentsListState extends ConsumerState<MeasurmentsList> {
           final fieldName = _convertToReadableText(key);
           final fieldValue = entry.value.toString();
 
+          //convert to inches
+          String fieldValueToInches =
+              cmToInches(double.parse(fieldValue)).toStringAsFixed(1);
+
           // Initialize the controller if not already created
           _controllers.putIfAbsent(
-              key, () => TextEditingController(text: fieldValue));
+              key, () => TextEditingController(text: '$fieldValueToInches in'));
 
           return Column(
             children: [

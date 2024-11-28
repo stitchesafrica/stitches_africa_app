@@ -40,6 +40,11 @@ class MeasurementScreen extends ConsumerWidget {
     return userID;
   }
 
+  double inchesToCm(double inches) {
+    const double inchToCmFactor = 2.54; // 1 inch = 2.54 cm
+    return inches * inchToCmFactor;
+  }
+
   Stream<UserMeasurementModel> getUserMeasurementStream() {
     return FirebaseFirestore.instance
         .collection('users_measurements')
@@ -103,20 +108,42 @@ class MeasurementScreen extends ConsumerWidget {
         color: Utilities.backgroundColor,
         padding: EdgeInsets.zero,
         child: Button(
-            border: false,
-            text: 'Save Measurment',
-            onTap: () async {
-              final updatedFields = ref.read(updatedFieldsProvider);
-              _showLoadingDialog(context);
-              await _firebaseFirestoreFunctions.updateUserMeasurementFields(
-                  _getCurrentUserId(), updatedFields);
+          border: false,
+          text: 'Save Measurement',
+          onTap: () async {
+            final updatedFields = ref.read(updatedFieldsProvider);
 
-              context.pop();
-              _showToasitification.showToast(
-                  context: context,
-                  toastificationType: ToastificationType.success,
-                  title: 'Measurement saved');
-            }),
+            // Process updated fields to remove "in" and convert back to cm
+            final Map<String, dynamic> processedFields = {};
+            updatedFields.forEach((key, value) {
+              if (value is String && value.endsWith(" in")) {
+                // Remove " in" and convert back to cm
+                final inchesValue =
+                    double.tryParse(value.replaceAll(" in", ""));
+                if (inchesValue != null) {
+                  processedFields[key] = inchesToCm(inchesValue);
+                }
+              } else {
+                processedFields[key] = inchesToCm(value);
+              }
+            });
+
+            _showLoadingDialog(context);
+
+            // Update Firebase with processed fields
+            await _firebaseFirestoreFunctions.updateUserMeasurementFields(
+              _getCurrentUserId(),
+              processedFields,
+            );
+
+            context.pop();
+            _showToasitification.showToast(
+              context: context,
+              toastificationType: ToastificationType.success,
+              title: 'Measurement saved',
+            );
+          },
+        ),
       ),
     );
   }

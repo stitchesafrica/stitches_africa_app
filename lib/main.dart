@@ -1,8 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -56,14 +58,24 @@ Future<void> loadEnvFiles() async {
 }
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await setOrientation();
-  setSystemUIOverlayStyle();
-  await initializeFirebase();
-  await initHive();
-  await loadEnvFiles();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  //initialize firebase
+  try {
+    await setOrientation();
+    setSystemUIOverlayStyle();
+    await initializeFirebase();
+    await initHive();
+    await loadEnvFiles();
+  } catch (e, stackTrace) {
+    if (kDebugMode) {
+      print('Error during initialization: $e');
+      print(stackTrace);
+    }
+    // Optionally, handle initialization errors (e.g., show an error screen)
+  } finally {
+    FlutterNativeSplash.remove();
+  }
 
   runApp(
     Phoenix(

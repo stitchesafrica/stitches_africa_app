@@ -11,3 +11,5 @@ final frontPhotoProvider = StateProvider.autoDispose<File?>((ref) => null);
 final sidePhotoProvider = StateProvider.autoDispose<File?>((ref) => null);
 final updatedFieldsProvider =
     StateProvider.autoDispose<Map<String, dynamic>>((ref) => {});
+final measurementErrorProvider =
+    StateProvider.autoDispose<String?>((ref) => null);

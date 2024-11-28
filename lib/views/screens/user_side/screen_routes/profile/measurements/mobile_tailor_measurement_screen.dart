@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:stitches_africa/constants/utilities.dart';
@@ -19,25 +21,6 @@ class MobileTailorMeasurementScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-        future: _firebaseFirestoreFunctions
-            .doesUserHave3DMeasurement(_getCurrentUserId()),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-                child:
-                    CircularProgressIndicator(color: Utilities.primaryColor));
-          } else if (snapshot.hasError) {
-            return const Center(
-              child: Text('An error occurred'),
-            );
-          }
-          final bool isTailorOnBoarded = snapshot.data!;
-          if (isTailorOnBoarded) {
-            return const UpdateUserMeasurementScreen();
-          } else {
-            return const UserNotScannedWidget();
-          }
-        });
+    return const UserNotScannedWidget();
   }
 }

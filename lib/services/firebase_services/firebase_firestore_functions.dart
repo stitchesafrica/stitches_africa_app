@@ -1335,23 +1335,33 @@ class FirebaseFirestoreFunctions {
   }
 
   //! M E A S U R M E N T  F U N C T I O N S
-  Future<bool> doesUserHave3DMeasurement(String userId) async {
+  Future<String> doesUserHave3DMeasurement(String userId) async {
     try {
-      DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
+      DocumentSnapshot doc = await FirebaseFirestore.instance
           .collection('users_measurements')
           .doc(userId)
           .get();
 
       // Check if the document exists
-      if (kDebugMode) {
-        print('User Measurement Doc exists:${docSnapshot.exists}');
+
+      if (doc.exists) {
+        final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        if (data.containsKey('task_set_url') &&
+            data.containsKey('volume_params') &&
+            data.containsKey('side_params') &&
+            data.containsKey('front_params')) {
+          return 'onboarded';
+        } else {
+          return 'exists';
+        }
+      } else {
+        return '!exists';
       }
-      return docSnapshot.exists;
     } catch (e) {
       if (kDebugMode) {
         print('Error checking document existence: $e');
       }
-      return false; // Return false in case of an error
+      return '!exists'; // Return false in case of an error
     }
   }
 
@@ -1455,7 +1465,6 @@ class FirebaseFirestoreFunctions {
       rethrow; // Optionally rethrow to handle it further up the call stack
     }
   }
-
 
   Future<Map<String, dynamic>?> getUserMeasurementData(String userId) async {
     try {

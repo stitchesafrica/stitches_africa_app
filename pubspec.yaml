@@ -72,8 +72,16 @@ dependencies:
   url_launcher: ^6.3.1
   keyboard_actions: ^4.2.0
   smooth_page_indicator: ^1.2.0+3
+  flutter_native_splash: ^2.4.1
+
+flutter_native_splash:
+  android: true
+  ios: true
+  color: "#FFFFFF"
+  image: "assets/images/splash_images/splash_1.jpg"
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
 
@@ -83,6 +91,12 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^3.0.0
+
+flutter_launcher_icons:
+  andriod: true
+  ios: true
+  image_path: "assets/icons/app_icon/app_icon.jpg"
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

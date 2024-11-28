@@ -1,9 +1,9 @@
-import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:stitches_africa/constants/utilities.dart';
 import 'package:stitches_africa/views/components/button.dart';
+import 'package:stitches_africa/views/widgets/user_side/user_onboarding/user_bottom_bar_onboarded_widget.dart';
 
 class UserNotScannedWidget extends StatelessWidget {
   const UserNotScannedWidget({super.key});
@@ -12,19 +12,25 @@ class UserNotScannedWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Utilities.backgroundColor,
-      // appBar: AppBar(
-      //   leading: GestureDetector(
-      //     onTap: () {
-      //       context.pop();
-      //     },
-      //     child: Transform.flip(
-      //       flipX: true,
-      //       child: const Icon(
-      //         FluentSystemIcons.ic_fluent_dismiss_filled,
-      //       ),
-      //     ),
-      //   ),
-      // ),
+      appBar: AppBar(actions: [
+        GestureDetector(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) {
+              return const UserBottomBarOnboardedWidget();
+            }));
+          },
+          child: Text(
+            'Do this later',
+            style: TextStyle(
+              fontSize: 14.spMin,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 15.w,
+        ),
+      ]),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

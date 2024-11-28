@@ -15,6 +15,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:stitches_africa/config/providers/measurement_providers/measurement_providers.dart';
 import 'package:stitches_africa/constants/utilities.dart';
+import 'package:stitches_africa/models/api/measurement/manual_calculation_model.dart';
 import 'package:stitches_africa/services/api_service/measurements/measurement_api_service.dart';
 import 'package:stitches_africa/services/firebase_services/firebase_firestore_functions.dart';
 import 'package:stitches_africa/views/components/button.dart';
@@ -43,6 +44,9 @@ class _UpdateUserMeasurementScreenState
   File? frontImageFile;
   File? sideImageFile;
   Timer? _timer;
+  String? measurementError;
+
+  bool canRetryScan = false;
 
   @override
   void dispose() {
@@ -207,34 +211,121 @@ class _UpdateUserMeasurementScreenState
   }
 
   Future<void> calculateMeasurement(File? frontPhoto, File? sidePhoto) async {
+    print(measurementError);
     if ((frontPhoto == null) || (sidePhoto == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Front and side photos are required. Refer to the guide for help.',
+          ),
+        ),
+      );
       return;
+    } else if (measurementError != null) {
+      await _retryCalculation(frontPhoto, sidePhoto);
     } else {
-      _showLoadingDialog();
-      final data = await _firebaseFirestoreFunctions
-          .getUserMeasurementData(_getCurrentUserId());
-      if (data != null) {
-        // update person
-        final updatedPersonModel = await _measurementApiService.updatePerson(
-          id: data['id'],
-          frontImage: frontPhoto,
-          sideImage: sidePhoto,
+      try {
+        _showLoadingDialog();
+        final data = await _firebaseFirestoreFunctions
+            .getUserMeasurementData(_getCurrentUserId());
+        if (data != null) {
+          // update person
+          final updatedPersonModel = await _measurementApiService.updatePerson(
+            id: data['id'],
+            frontImage: frontPhoto,
+            sideImage: sidePhoto,
+          );
+          if (kDebugMode) {
+            print(updatedPersonModel.taskSetUrl);
+          }
+          //store task url in db
+          await _firebaseFirestoreFunctions
+              .syncUserMeasurementDataWithAPI(_getCurrentUserId(), {
+            'task_set_url': updatedPersonModel.taskSetUrl,
+          });
+
+          //get task specific set
+          final String taskSetId =
+              extractTaskSetId(updatedPersonModel.taskSetUrl);
+          if (kDebugMode) {
+            print(taskSetId);
+          }
+
+          // Periodically check the task set status
+          await periodicallyCheckTaskSet(taskSetId);
+        }
+      } catch (e) {
+        if (mounted) {
+          context.pop();
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'An error occurred while calculating your measurements. Please try again.',
+            ),
+          ),
         );
-        print(updatedPersonModel.taskSetUrl);
-        //store task url in db
-        await _firebaseFirestoreFunctions
-            .syncUserMeasurementDataWithAPI(_getCurrentUserId(), {
-          'task_set_url': updatedPersonModel.taskSetUrl,
-        });
-
-        //get task specific set
-        final String taskSetId =
-            extractTaskSetId(updatedPersonModel.taskSetUrl);
-        print(taskSetId);
-
-        // Periodically check the task set status
-        await periodicallyCheckTaskSet(taskSetId);
       }
+    }
+  }
+
+  Future<void> _retryCalculation(File? frontPhoto, File? sidePhoto) async {
+    if ((frontPhoto == null) || (sidePhoto == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Front and side photos are required. Refer to the guide for help.',
+          ),
+        ),
+      );
+      return;
+    }
+    try {
+      if (measurementError!.contains('front photo in the side') ||
+          measurementError!.contains('side photo in the front') ||
+          measurementError!.contains('detect the human body') ||
+          measurementError!.contains('the pose is wrong') ||
+          measurementError!.contains('the body is not full')) {
+        _showLoadingDialog();
+        final data = await _firebaseFirestoreFunctions
+            .getUserMeasurementData(_getCurrentUserId());
+
+        if (data != null) {
+          // Partial Update a Specific Person
+          await _measurementApiService.partialUpdatePerson(
+            id: data['id'],
+            frontImage: frontPhoto,
+            sideImage: sidePhoto,
+          );
+
+          final manualCalculationModel = await _measurementApiService
+              .startManualCalculation(id: data['id']);
+          if (kDebugMode) {
+            print(manualCalculationModel.taskSetUrl);
+          }
+          //store task url in db
+          await _firebaseFirestoreFunctions
+              .syncUserMeasurementDataWithAPI(_getCurrentUserId(), {
+            'task_set_url': manualCalculationModel.taskSetUrl,
+          });
+          //get task specific set
+          final String taskSetId =
+              extractTaskSetId(manualCalculationModel.taskSetUrl);
+          if (kDebugMode) {
+            print(taskSetId);
+          }
+
+          // Periodically check the task set status
+          await periodicallyCheckTaskSet(taskSetId);
+        }
+      }
+    } catch (e) {
+      context.pop();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+          'An error occurred while retrying the calculation. Please try again.',
+        ),
+      ));
     }
   }
 
@@ -311,6 +402,17 @@ class _UpdateUserMeasurementScreenState
               ),
             );
           }
+        } else if (isReady && isSuccessful == false) {
+          if (mounted) {
+            context.pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Measurement failed. Retake photos and refer to the guide for help.',
+                ),
+              ),
+            );
+          }
         } else {
           // is_ready == false, keep polling
           await Future.delayed(const Duration(seconds: 5));
@@ -325,6 +427,10 @@ class _UpdateUserMeasurementScreenState
         }
       }
     } catch (e) {
+      setState(() {
+        canRetryScan = true;
+      });
+      measurementError = e.toString().toLowerCase();
       // Handle errors and ensure the widget is still mounted before dismissing dialog
       if (mounted) {
         context.pop(); // Dismiss the loading dialog
@@ -335,14 +441,18 @@ class _UpdateUserMeasurementScreenState
       }
 
       // Optionally show an error message to the user
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'An error occurred while processing your request. Please try again.',
-            ),
-          ),
-        );
+      if (measurementError!.contains('front photo in the side')) {
+        _showErrorDialog('Front photo in the side');
+      } else if (measurementError!.contains('side photo in the front')) {
+        _showErrorDialog('Side photo in the front');
+      } else if (measurementError!.contains('detect the human body')) {
+        _showErrorDialog('Can not detect human body');
+      } else if (measurementError!.contains('the pose is wrong')) {
+        _showErrorDialog('The pose is wrong');
+      } else if (measurementError!.contains('the body is not full')) {
+        _showErrorDialog('The body is not full');
+      } else {
+        _showErrorDialog('');
       }
     }
   }
@@ -372,6 +482,18 @@ class _UpdateUserMeasurementScreenState
         child: CircularProgressIndicator(color: Utilities.backgroundColor),
       ),
     );
+  }
+
+  void _showErrorDialog(String subText) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'An error occurred while processing your request. $subText. Please try again.',
+          ),
+        ),
+      );
+    }
   }
 
   /// Builds a label for input fields
@@ -622,7 +744,7 @@ class _UpdateUserMeasurementScreenState
             color: (frontPhoto == null) || (sidePhoto == null)
                 ? Utilities.secondaryColor3
                 : Utilities.primaryColor,
-            text: 'Continue',
+            text: canRetryScan ? 'Retry Scan' : 'Continue',
             onTap: () {
               _showInstructions(frontPhoto, sidePhoto);
             }),

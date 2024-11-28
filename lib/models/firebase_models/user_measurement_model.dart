@@ -47,8 +47,8 @@ class VolumeParams {
   final double neckGirthRelaxed;
   final double forearm;
   final double elbowGirth;
-  final String? bodyType;
-  final String? bodyModel;
+  // final String? bodyType;
+  // final String? bodyModel;
 
   VolumeParams({
     required this.chest,
@@ -79,8 +79,8 @@ class VolumeParams {
     required this.neckGirthRelaxed,
     required this.forearm,
     required this.elbowGirth,
-    this.bodyType,
-    this.bodyModel,
+    // this.bodyType,
+    // this.bodyModel,
   });
 
   factory VolumeParams.fromDocument(Map<String, dynamic> doc) {
@@ -113,8 +113,8 @@ class VolumeParams {
       neckGirthRelaxed: doc['neck_girth_relaxed'] ?? 0.0,
       forearm: doc['forearm'] ?? 0.0,
       elbowGirth: doc['elbow_girth'] ?? 0.0,
-      bodyType: doc['body_type'],
-      bodyModel: doc['body_model'],
+      // bodyType: doc['body_type'],
+      // bodyModel: doc['body_model'],
     );
   }
   Map<String, dynamic> toJson() {
@@ -147,8 +147,8 @@ class VolumeParams {
       'neck_girth_relaxed': neckGirthRelaxed,
       'forearm': forearm,
       'elbow_girth': elbowGirth,
-      'body_type': bodyType,
-      'body_model': bodyModel,
+      // 'body_type': bodyType,
+      // 'body_model': bodyModel,
     };
   }
 }

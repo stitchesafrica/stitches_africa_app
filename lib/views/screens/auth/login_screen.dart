@@ -12,7 +12,6 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:stitches_africa/constants/utilities.dart';
 import 'package:stitches_africa/services/firebase_services/firebase_auth_service.dart';
 import 'package:stitches_africa/services/firebase_services/firebase_firestore_functions.dart';
-import 'package:stitches_africa/services/hive_service/hive_service.dart';
 import 'package:stitches_africa/views/components/button.dart';
 import 'package:stitches_africa/views/components/custom_textfield.dart';
 import 'package:stitches_africa/views/components/password_visibility.dart';
@@ -31,7 +30,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final FirebaseFirestoreFunctions _firebaseFirestoreFunctions =
       FirebaseFirestoreFunctions();
   final FirebaseAuthService _firebaseAuthService = FirebaseAuthService();
-  final HiveService _hiveService = HiveService();
 
   // Controllers for text input fields
   final TextEditingController _emailController = TextEditingController();
@@ -273,7 +271,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   hintText: 'PASSWORD',
                   obscureText: obscureText,
                   errorText: passwordError,
-                  
                   autofillHints: const [AutofillHints.password],
                 ),
               ),

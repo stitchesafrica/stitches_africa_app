@@ -1,8 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_icons/fluentui_icons.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -15,6 +18,7 @@ import 'package:stitches_africa/models/api/measurement/person_model.dart';
 import 'package:stitches_africa/services/api_service/measurements/measurement_api_service.dart';
 import 'package:stitches_africa/services/firebase_services/firebase_firestore_functions.dart';
 import 'package:stitches_africa/views/components/button.dart';
+import 'package:stitches_africa/views/components/custom_dialog.dart';
 import 'package:stitches_africa/views/components/toastification.dart';
 import 'package:stitches_africa/views/screens/onboarding/measurement/email_address_screen.dart';
 import 'package:stitches_africa/views/screens/onboarding/measurement/gender_screen.dart';
@@ -147,7 +151,7 @@ class MobileTailorOnboardingScreen extends ConsumerWidget {
         onTap: () {
           // on last page
           if (pageIndex == pageScreens.length - 1) {
-            _saveHandler(context, ref);
+            _showConfirmationDialog(context, ref);
           } else {
             _pageController.nextPage(
                 duration: const Duration(milliseconds: 300),
@@ -171,6 +175,57 @@ class MobileTailorOnboardingScreen extends ConsumerWidget {
         child: CircularProgressIndicator(color: Utilities.backgroundColor),
       ),
     );
+  }
+
+  void _showConfirmationDialog(BuildContext context, WidgetRef ref) {
+    final String gender = ref.read(genderProvider);
+    final int height = ref.read(heightProvider);
+    final double weight = ref.read(weightProvider).toDouble();
+    if (Platform.isIOS) {
+      // Cupertino Dialog for iOS
+      showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CustomTwoButtonCupertinoDialog(
+            title: 'Confirm Your Details',
+            content: 'Please review the details below:\n\n'
+                'Gender: $gender\n'
+                'Height: $height cm\n'
+                'Weight: $weight kg',
+            button1Text: 'Edit',
+            button2Text: 'Confirm',
+            onButton1Pressed: () => context.pop(),
+            onButton2Pressed: () async {
+              context.pop();
+              await _saveHandler(context, ref);
+            },
+          );
+        },
+      );
+    } else {
+      // Material AlertDialog for Android
+      showDialog(
+        context: context,
+        builder: (context) {
+          return CustomTwoButtonAlertDialog(
+            title: 'Confirm Your Details',
+            content: 'Please review the details below:\n\n'
+                'Gender: $gender\n'
+                'Height: $height cm\n'
+                'Weight: $weight kg',
+            button1Text: 'Edit',
+            button2Text: 'Confirm',
+            button1BorderEnabled: true,
+            button2BorderEnabled: false,
+            onButton1Pressed: () => context.pop(),
+            onButton2Pressed: () async {
+              context.pop();
+              await _saveHandler(context, ref);
+            },
+          );
+        },
+      );
+    }
   }
 
   Future<void> _saveHandler(BuildContext context, WidgetRef ref) async {
@@ -253,7 +308,7 @@ class MobileTailorOnboardingScreen extends ConsumerWidget {
             ),
             Expanded(
               child: PageView.builder(
-                physics: const NeverScrollableScrollPhysics(),
+                // physics: const NeverScrollableScrollPhysics(),
                 controller: _pageController,
                 onPageChanged: (index) {
                   ref.read(pageIndexProvider.notifier).state = index;
