@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -74,14 +76,9 @@ class _MyBottomBarState extends ConsumerState<UserBottomBarOnboardedWidget> {
       appBar: AppBar(
         backgroundColor: Utilities.backgroundColor,
         title: _currentIndex == 0
-            ? Text(
-                'STITCHES AFRICA',
-                style: TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 22.sp,
-                  letterSpacing: 1,
-                  fontWeight: FontWeight.w800,
-                ),
+            ? Image.asset(
+                'assets/images/sa_text2.png',
+                width: 225.w,
               )
             : null,
         centerTitle: true,

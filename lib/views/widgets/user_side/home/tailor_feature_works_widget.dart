@@ -1,11 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:stitches_africa/constants/utilities.dart';
 import 'package:stitches_africa/models/firebase_models/tailor_model_home_screen.dart';
 import 'package:stitches_africa/views/components/button.dart';
-import 'package:stitches_africa/views/screens/user_side/screen_routes/tailor_screen.dart';
+import 'package:stitches_africa/views/screens/user_side/screen_routes/tailor_wears_catalog_screen.dart';
 import 'package:stitches_africa/views/widgets/media/fullscreeen_image.dart';
 
 class TailorFeatureWorksWidget extends StatelessWidget {
@@ -20,22 +21,27 @@ class TailorFeatureWorksWidget extends StatelessWidget {
       children: [
         /// Tailor's Profile Row
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            CachedNetworkImage(
-              fit: BoxFit.cover,
-              height: 18.h,
-              imageUrl: tailor.tailorLogo,
-              placeholder: (context, url) => _buildShimmerPlaceholder(),
-              errorWidget: (context, url, error) => const Icon(Icons.error),
-            ),
-            SizedBox(width: 10.w),
-            Text(
-              tailor.tailorName,
-              style: TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-              ),
+            Row(
+              children: [
+                CachedNetworkImage(
+                  fit: BoxFit.cover,
+                  height: 18.h,
+                  imageUrl: tailor.tailorLogo,
+                  placeholder: (context, url) => _buildShimmerPlaceholder(),
+                  errorWidget: (context, url, error) => const Icon(Icons.error),
+                ),
+                SizedBox(width: 10.w),
+                Text(
+                  tailor.tailorName,
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -75,7 +81,7 @@ class TailorFeatureWorksWidget extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => TailorScreen(
+                builder: (context) => TailorWearsCatalogScreen(
                   docID: tailor.docID,
                   tailorName: tailor.tailorName,
                 ),
@@ -84,7 +90,7 @@ class TailorFeatureWorksWidget extends StatelessWidget {
           },
         ),
 
-        SizedBox(height: 25.h),
+        SizedBox(height: 50.h),
       ],
     );
   }

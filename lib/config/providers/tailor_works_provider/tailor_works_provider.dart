@@ -4,3 +4,6 @@ final titleProvider = StateProvider<String>((ref) => '');
 final priceProvider = StateProvider<String>((ref) => '');
 final descriptionProvider = StateProvider<String>((ref) => '');
 final tagsProvider = StateProvider<List<String>>((ref) => []);
+
+//user side
+final groupValueProvider = StateProvider<String>((ref) => 'Price (low first)');

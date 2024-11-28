@@ -6,20 +6,28 @@ import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:stitches_africa/config/providers/tailor_works_provider/tailor_works_provider.dart';
 import 'package:stitches_africa/constants/utilities.dart';
-import 'package:stitches_africa/models/firebase_models/cart_model.dart';
 import 'package:stitches_africa/models/firebase_models/tailor_work_model.dart';
 import 'package:stitches_africa/services/firebase_services/firebase_firestore_functions.dart';
+import 'package:stitches_africa/views/components/button.dart';
+import 'package:stitches_africa/views/components/cart_button.dart';
 import 'package:stitches_africa/views/screens/user_side/screen_routes/tailor_work_details.dart';
+import 'package:stitches_africa/views/screens/user_side/screen_routes/tailors/refine_screen.dart';
 import 'package:stitches_africa/views/widgets/user_side/home/tailor_works_widget.dart';
 
-class TailorScreen extends ConsumerWidget {
+class TailorWearsCatalogScreen extends ConsumerWidget {
   final String docID;
   final String tailorName;
+  final String? sortOption;
 
-  TailorScreen({super.key, required this.docID, required this.tailorName});
+  TailorWearsCatalogScreen({
+    super.key,
+    required this.docID,
+    required this.tailorName,
+    this.sortOption,
+  });
 
   final FirebaseFirestoreFunctions _firebaseFirestoreFunctions =
       FirebaseFirestoreFunctions();
@@ -29,29 +37,24 @@ class TailorScreen extends ConsumerWidget {
     return FirebaseAuth.instance.currentUser!.uid;
   }
 
-  /// Stream of tailor's works based on the tailor's document ID
   Stream<List<TailorWorkModel>> _getTailorsWorksStream() {
+    bool ascending = true; // Default sort order
+
+    // Determine sort order based on the selected sort option
+    if (sortOption == "Price (low first)") {
+      ascending = true;
+    } else if (sortOption == "Price (high first)") {
+      ascending = false;
+    }
+
+    // Use the determined sort order to fetch sorted data
     return FirebaseFirestore.instance
         .collection('tailor_works')
         .where('id', isEqualTo: docID)
+        .orderBy('price', descending: !ascending)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => TailorWorkModel.fromDocument(doc.data()))
-            .toList());
-  }
-
-  /// Stream of cart items for the current user
-  Stream<List<CartModel>> _getCartItemsStream() {
-    return FirebaseFirestore.instance
-        .collection('users_cart_items')
-        .doc(_getCurrentUserId())
-        .collection('user_cart_items')
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => CartModel.fromDocument(
-                  doc.data(),
-                  totalItems: snapshot.docs.length,
-                ))
             .toList());
   }
 
@@ -73,6 +76,7 @@ class TailorScreen extends ConsumerWidget {
         backgroundColor: Utilities.backgroundColor,
         leading: GestureDetector(
           onTap: () {
+            ref.invalidate(groupValueProvider);
             context.pop();
           },
           child: Transform.flip(
@@ -82,47 +86,19 @@ class TailorScreen extends ConsumerWidget {
             ),
           ),
         ),
+        title: Text(
+          tailorName.toUpperCase(),
+          style: TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 20.sp,
+            letterSpacing: 1,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: true,
         actions: [
           /// Cart Icon with Item Count
-          GestureDetector(
-            onTap: () async {
-              _showLoadingDialog(context);
-              await _firebaseFirestoreFunctions.refreshCart(
-                  ref, cartSubCollection);
-              Navigator.pop(context); // Close loading dialog
-              context.pushNamed('shoppingScreen');
-            },
-            child: Row(
-              children: [
-                StreamBuilder<List<CartModel>>(
-                  stream: _getCartItemsStream(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Text(
-                        '...',
-                        style: TextStyle(fontSize: 12.sp),
-                      );
-                    } else if (snapshot.hasData) {
-                      final totalItems = snapshot.data!.isEmpty
-                          ? 0
-                          : snapshot.data!.first.totalItems;
-                      return Text(
-                        '$totalItems',
-                        style: TextStyle(fontSize: 12.sp),
-                      );
-                    } else {
-                      return const SizedBox.shrink();
-                    }
-                  },
-                ),
-                SizedBox(width: 3.w),
-                SvgPicture.asset(
-                  'assets/icons/bag.svg',
-                  height: 22.h,
-                ),
-              ],
-            ),
-          ),
+          CartButton(),
           SizedBox(width: 8.w),
         ],
       ),
@@ -145,6 +121,7 @@ class TailorScreen extends ConsumerWidget {
                       ),
                     );
                   } else if (snapshot.hasError) {
+                    print(snapshot.error);
                     return const Center(
                       child: Text('An error occurred'),
                     );
@@ -164,16 +141,66 @@ class TailorScreen extends ConsumerWidget {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        tailorName.toUpperCase(),
-                        style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 22.sp,
-                          letterSpacing: 1,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      SizedBox(
+                        height: 10.h,
                       ),
-                      SizedBox(height: 25.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 100.w,
+                            child: ButtonIcon(
+                              text: 'Refine',
+                              sizedBoxWidth: 5,
+                              paddingWidth: 10.w,
+                              paddingTop: 8.h,
+                              iconPath: 'assets/icons/sort-by-line.svg',
+                              border: true,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const RefineScreen(),
+                                  ),
+                                ).then((selectedSortOption) {
+                                  if (selectedSortOption != null) {
+                                    context.pop();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            TailorWearsCatalogScreen(
+                                          docID: docID,
+                                          tailorName: tailorName,
+                                          sortOption: selectedSortOption,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 12.5.h,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 75.w,
+                            child: const Divider(
+                              thickness: 0.5,
+                              color: Utilities.secondaryColor2,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 12.5.h,
+                      ),
                       Expanded(
                         child: GridView.builder(
                           gridDelegate:
@@ -224,17 +251,6 @@ class TailorScreen extends ConsumerWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  /// Displays a loading dialog
-  void _showLoadingDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(color: Utilities.backgroundColor),
       ),
     );
   }

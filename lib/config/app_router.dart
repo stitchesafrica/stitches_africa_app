@@ -22,6 +22,7 @@ import 'package:stitches_africa/views/screens/user_side/screen_routes/profile/me
 import 'package:stitches_africa/views/screens/user_side/screen_routes/profile/measurements/update_user_measurement_screen.dart';
 import 'package:stitches_africa/views/screens/user_side/screen_routes/profile/orders_and_return_screen.dart';
 import 'package:stitches_africa/views/screens/user_side/screen_routes/shopping_bag/shopping_bag_screen.dart';
+import 'package:stitches_africa/views/screens/user_side/screen_routes/tailors/refine_screen.dart';
 import 'package:stitches_africa/views/tailor_bottom_bar.dart';
 
 final GoRouter router = GoRouter(debugLogDiagnostics: true, routes: [
@@ -159,6 +160,12 @@ final GoRouter router = GoRouter(debugLogDiagnostics: true, routes: [
     path: '/shoppingScreen',
     name: 'shoppingScreen',
     builder: (context, state) => ShoppingBagScreen(),
+    routes: const [],
+  ),
+  GoRoute(
+    path: '/refineScreen',
+    name: 'refineScreen',
+    builder: (context, state) => const RefineScreen(),
     routes: const [],
   ),
   GoRoute(
